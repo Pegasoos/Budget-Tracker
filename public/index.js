@@ -99,9 +99,8 @@ const request = window.indexedDB.open("budget", 1);
 saveRecord = (newItem) => {
   const saveTransaction = db.transaction("budget", "readwrite");
   const budgetStore = saveTransaction.objectStore("budget");
-  //const loadStatusIndex = budgetStore.index("loadStatusIndex");
-  const note = {"text":"Test"};
-  budgetStore.add(note);
+  //const loadStatusIndex = budgetStore.index("loadStatusIndex"); 
+  budgetStore.add(newItem);
 }
 
 function sendTransaction(isAdding) {
@@ -162,8 +161,8 @@ function sendTransaction(isAdding) {
   })
   .catch(err => {
     // fetch failed, so save in indexed db
+    console.log("saveRecord ran")
     saveRecord(transaction);
-
     // clear form
     nameEl.value = "";
     amountEl.value = "";
