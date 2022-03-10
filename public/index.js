@@ -78,29 +78,30 @@ function populateChart() {
   });
 }
 //Indexed DB Start
-const request = window.indexedDB.open("budget", 1);
+let db;
 
+const request = window.indexedDB.open("budget", 1);
       // Create schema
       request.onupgradeneeded = event => {
-        const db = event.target.result;
+        db = event.target.result;
 
         // Creates an object store with a listID keypath that can be used to query on.
         const budgetStore = db.createObjectStore("budget", {
-          keyPath: "transactionID"
+          keyPath: "transactionID",
+          autoIncrement: true
         });
-        budgetStore.createIndex("loadStatusIndex","loadStatus")
+        //budgetStore.createIndex("loadStatusIndex","loadStatus")
       };
-request.onsuccess = () =>{
-  const db = request.result;
-  const transaction = db.transaction(["budget"], "readwrite");
-  const budgetStore = transaction.objectStore("budget");
-  const loadStatusIndex = budgetStore.index("loadStatusIndex");
-
-  budgetStore.add({ transactionID: "1", loadStatus:"loaded"});
+    request.onsuccess = () =>{
+    db = request.result;
 }
 
-saveRecord = (transaction) => {
-console.log(budgetStore);
+saveRecord = (newItem) => {
+  const saveTransaction = db.transaction("budget", "readwrite");
+  const budgetStore = saveTransaction.objectStore("budget");
+  //const loadStatusIndex = budgetStore.index("loadStatusIndex");
+  const note = {"text":"Test"};
+  budgetStore.add(note);
 }
 
 function sendTransaction(isAdding) {
