@@ -143,6 +143,27 @@ function sendTransaction(isAdding) {
     amountEl.value = "";
   });
 }
+//Indexed DB Start
+const request = window.indexedDB.open("budget", 1);
+
+      // Create schema
+      request.onupgradeneeded = event => {
+        const db = event.target.result;
+
+        // Creates an object store with a listID keypath that can be used to query on.
+        const budgetStore = db.createObjectStore("budget", {
+          keyPath: "transactionID"
+        });
+        budgetStore.createIndex("loadStatusIndex","loadStatus")
+      };
+request.onsuccess = () =>{
+  const db = request.result;
+  const transaction = db.transaction(["budget"], "readwrite");
+  const budgetStore = transaction.objectStore("budget");
+  const loadStatusIndex = budgetStore.index("loadStatusIndex");
+  console.log("IndexDB BIG SUCCESS")
+}
+
 
 document.querySelector("#add-btn").onclick = function() {
   sendTransaction(true);
