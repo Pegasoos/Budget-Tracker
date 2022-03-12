@@ -94,6 +94,7 @@ const request = window.indexedDB.open("budget", 1);
       };
     request.onsuccess = () =>{
     db = request.result;
+    updateLive();
 }
 
 saveRecord = (newItem) => {
@@ -101,6 +102,40 @@ saveRecord = (newItem) => {
   const budgetStore = saveTransaction.objectStore("budget");
   //const loadStatusIndex = budgetStore.index("loadStatusIndex"); 
   budgetStore.add(newItem);
+};
+
+//function to run post request with data from indexedDB
+updateLive = () => {
+
+  if(navigator.onLine){
+    // if browser is online, get data from indexedDB
+    const updateMongoTransaction = db.transaction("budget", "readonly");
+    const updateMongoStore = updateMongoTransaction.objectStore("budget");
+    const offlinePosts = updateMongoStore.getAll();
+    console.log(offlinePosts);
+    offlinePosts.onsuccess = () =>{
+      offlinePosts.result.forEach((post) => {
+        fetch("/api/transaction", {
+          method: "POST",
+          body: JSON.stringify(post),
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json"
+          }
+        })
+      })
+      .then(response => {   
+        //const deleteTransaction = db.transaction("budget", "readwrite");
+        //const deleteTransactionStore = deleteTransaction.objectStore("budget");
+        //deleteTransactionStore.clear(); 
+        console.log("DB Scrubbed!");
+        return response.json();
+      })
+    }
+  }
+  else{
+   console.log("All up to date! Or offline.");
+  }
 }
 
 function sendTransaction(isAdding) {
