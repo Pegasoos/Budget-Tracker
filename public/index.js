@@ -105,7 +105,7 @@ saveRecord = (newItem) => {
 };
 
 //function to run post request with data from indexedDB
-updateLive = () => {
+updateLive = async () => {
 
   if(navigator.onLine){
     // if browser is online, get data from indexedDB
@@ -113,9 +113,9 @@ updateLive = () => {
     const updateMongoStore = updateMongoTransaction.objectStore("budget");
     const offlinePosts = updateMongoStore.getAll();
     console.log(offlinePosts);
-    offlinePosts.onsuccess = () =>{
-      offlinePosts.result.forEach((post) => {
-        fetch("/api/transaction", {
+      offlinePosts.onsuccess = async () => {
+        const updatedPosts = await offlinePosts.result.forEach((post) => {
+          fetch("/api/transaction", {
           method: "POST",
           body: JSON.stringify(post),
           headers: {
@@ -123,14 +123,13 @@ updateLive = () => {
             "Content-Type": "application/json"
           }
         })
-      })
-      .then(response => {   
-        //const deleteTransaction = db.transaction("budget", "readwrite");
-        //const deleteTransactionStore = deleteTransaction.objectStore("budget");
-        //deleteTransactionStore.clear(); 
+      });  
+        // add db clear transaction here
+        const deleteTransaction = db.transaction("budget", "readwrite");
+        const deleteTransactionStore = deleteTransaction.objectStore("budget");
+        const deletedStore = await deleteTransactionStore.clear(); 
         console.log("DB Scrubbed!");
-        return response.json();
-      })
+        return deletedStore
     }
   }
   else{
